@@ -17,20 +17,20 @@ export const INITIAL_ACHIEVEMENTS: Achievement[] = [
   {
     id: 'expert_normal',
     title: '가스안전 전문가',
-    description: '일반 모드에서 5,000점 이상 고득점 달성하기',
+    description: '일반 모드에서 10,000점 이상 고득점 달성하기',
     icon: 'Award',
     unlocked: false,
     progress: 0,
-    maxProgress: 5000,
+    maxProgress: 10000,
   },
   {
     id: 'master_hard',
     title: '가스안전 마스터',
-    description: '하드 모드에서 16,000점 이상 고득점 달성하기',
+    description: '하드 모드에서 10,300점 이상 고득점 달성하기',
     icon: 'Crown',
     unlocked: false,
     progress: 0,
-    maxProgress: 16000,
+    maxProgress: 10300,
   },
   {
     id: 'prologue_15',
@@ -99,10 +99,17 @@ export const storage = {
       const data = localStorage.getItem(ACHIEVEMENTS_KEY);
       if (!data) return INITIAL_ACHIEVEMENTS;
       const saved: Achievement[] = JSON.parse(data);
-      // Merge with latest schema in case of new achievements
+      // Merge with latest schema in case of new achievements / updated targets
       return INITIAL_ACHIEVEMENTS.map(initial => {
         const found = saved.find(s => s.id === initial.id);
-        return found ? { ...initial, ...found } : initial;
+        return found
+          ? {
+              ...initial,
+              unlocked: found.unlocked,
+              progress: found.progress,
+              unlockedAt: found.unlockedAt,
+            }
+          : initial;
       });
     } catch {
       return INITIAL_ACHIEVEMENTS;
@@ -229,22 +236,22 @@ export const storage = {
       newlyUnlocked.push(survivorAch);
     }
 
-    // 2. 가스안전 전문가 (일반 모드 5,000점 이상 달성)
+    // 2. 가스안전 전문가 (일반 모드 10,000점 이상 달성)
     const expertAch = achievements.find(a => a.id === 'expert_normal');
     if (expertAch) {
       expertAch.progress = Math.max(expertAch.progress, stats.normalHighScore);
-      if (mode === 'normal' && score >= 5000 && !expertAch.unlocked) {
+      if (mode === 'normal' && score >= 10000 && !expertAch.unlocked) {
         expertAch.unlocked = true;
         expertAch.unlockedAt = new Date().toLocaleDateString('ko-KR');
         newlyUnlocked.push(expertAch);
       }
     }
 
-    // 3. 가스안전 마스터 (하드 모드 16,000점 이상 달성)
+    // 3. 가스안전 마스터 (하드 모드 10,300점 이상 달성)
     const masterAch = achievements.find(a => a.id === 'master_hard');
     if (masterAch) {
       masterAch.progress = Math.max(masterAch.progress, stats.hardHighScore);
-      if (mode === 'hard' && score >= 16000 && !masterAch.unlocked) {
+      if (mode === 'hard' && score >= 10300 && !masterAch.unlocked) {
         masterAch.unlocked = true;
         masterAch.unlockedAt = new Date().toLocaleDateString('ko-KR');
         newlyUnlocked.push(masterAch);

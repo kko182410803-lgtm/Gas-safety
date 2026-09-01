@@ -333,7 +333,7 @@ export const PrologueModal: React.FC<PrologueModalProps> = ({
               </p>
               {isLegitimateClear ? (
                 <div className="inline-block bg-amber-500/20 border border-amber-500/40 text-amber-300 px-4 py-1.5 rounded-full text-xs font-bold">
-                  🏆 프롤로그 클리어 횟수: {prologueClearCount + 1}회 (15회 완료 시 도전과제 달성!)
+                  🏆 프롤로그 클리어 횟수: {prologueClearCount}회 (15회 완료 시 도전과제 달성!)
                 </div>
               ) : (
                 <div className="inline-flex items-center gap-2 bg-slate-800/90 border border-amber-500/50 text-amber-300 px-4 py-2 rounded-xl text-xs font-bold max-w-lg text-left shadow-lg">
