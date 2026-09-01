@@ -153,7 +153,6 @@ export const KitchenScene: React.FC<KitchenSceneProps> = ({
     setWindowClicks(nextClicks);
 
     if (nextClicks >= 2) {
-      setWindowClicks(0);
       onInteract('window');
     }
   };
@@ -233,7 +232,7 @@ export const KitchenScene: React.FC<KitchenSceneProps> = ({
             }}
           />
 
-          {/* Kitchen Wall Clock with unified hands connected to central axle & swinging pendulum */}
+          {/* Kitchen Wall Clock with unified hands connected to central axle */}
           <div className="absolute top-2 right-[28%] flex flex-col items-center z-10">
             {/* Clock Dial */}
             <div className="w-14 h-14 rounded-full bg-white border-2 border-slate-600 shadow-lg relative flex items-center justify-center">
@@ -255,12 +254,6 @@ export const KitchenScene: React.FC<KitchenSceneProps> = ({
               />
               {/* Center Axle / Pin (firmly connecting the hands) */}
               <div className="w-2 h-2 bg-amber-600 border border-slate-900 rounded-full z-20 shadow-xs" />
-            </div>
-
-            {/* Pendulum (시계 추) hanging and attached directly below clock */}
-            <div className="flex flex-col items-center -mt-1 origin-top animate-pendulum">
-              <div className="w-0.5 h-5 bg-slate-400" />
-              <div className="w-3 h-3 bg-amber-500 border border-amber-700 rounded-full shadow-sm" />
             </div>
 
             {/* Gas Safety Awareness Sign placed cleanly UNDER the clock */}
@@ -328,11 +321,11 @@ export const KitchenScene: React.FC<KitchenSceneProps> = ({
         <div className="absolute inset-0 flex p-1 pt-4 gap-1 pointer-events-none">
           {/* Left Pane */}
           <div 
-            className="w-1/2 h-full bg-white/40 backdrop-blur-xs border-2 border-slate-400 rounded flex flex-col justify-between p-1 transition-transform duration-300"
+            className="w-1/2 h-full bg-white/40 backdrop-blur-xs border-2 border-slate-400 rounded flex flex-col justify-between p-1 transition-transform duration-300 ease-out"
             style={{
-              transform: isTargeted('window') 
-                ? (windowClicks === 1 ? 'translateX(-30%)' : 'translateX(0%)')
-                : 'translateX(-70%)'
+              transform: !isTargeted('window') || windowClicks >= 2
+                ? 'translateX(-80%)'
+                : (windowClicks === 1 ? 'translateX(-40%)' : 'translateX(0%)')
             }}
           >
             <div className="w-full h-0.5 bg-white/60" />
@@ -341,11 +334,11 @@ export const KitchenScene: React.FC<KitchenSceneProps> = ({
 
           {/* Right Pane */}
           <div 
-            className="w-1/2 h-full bg-white/40 backdrop-blur-xs border-2 border-slate-400 rounded flex flex-col justify-between p-1 transition-transform duration-300"
+            className="w-1/2 h-full bg-white/40 backdrop-blur-xs border-2 border-slate-400 rounded flex flex-col justify-between p-1 transition-transform duration-300 ease-out"
             style={{
-              transform: isTargeted('window') 
-                ? (windowClicks === 1 ? 'translateX(30%)' : 'translateX(0%)')
-                : 'translateX(70%)'
+              transform: !isTargeted('window') || windowClicks >= 2
+                ? 'translateX(80%)'
+                : (windowClicks === 1 ? 'translateX(40%)' : 'translateX(0%)')
             }}
           >
             <div className="w-full h-0.5 bg-white/60" />

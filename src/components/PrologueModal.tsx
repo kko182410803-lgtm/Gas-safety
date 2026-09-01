@@ -40,6 +40,8 @@ export const PrologueModal: React.FC<PrologueModalProps> = ({
 }) => {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [stepCompleted, setStepCompleted] = useState<boolean[]>(new Array(6).fill(false));
+  const [practicedSteps, setPracticedSteps] = useState<boolean[]>(new Array(6).fill(false));
+  const [hasSkippedAny, setHasSkippedAny] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
   const [dishclothSelected, setDishclothSelected] = useState(false);
   const isAdvancingRef = useRef(false);
@@ -58,17 +60,21 @@ export const PrologueModal: React.FC<PrologueModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleStepInteract = (hazardType: HazardType) => {
-    // Prevent spam clicking from skipping multiple steps
+  // Legitimately interacted via KitchenScene
+  const handleSceneInteract = (hazardType: HazardType) => {
     if (isAdvancingRef.current) return;
     if (hazardType !== currentStep.hazardType) return;
 
     isAdvancingRef.current = true;
     soundManager.playSuccess(1);
 
-    const updated = [...stepCompleted];
-    updated[currentStepIndex] = true;
-    setStepCompleted(updated);
+    const updatedCompleted = [...stepCompleted];
+    updatedCompleted[currentStepIndex] = true;
+    setStepCompleted(updatedCompleted);
+
+    const updatedPracticed = [...practicedSteps];
+    updatedPracticed[currentStepIndex] = true;
+    setPracticedSteps(updatedPracticed);
 
     // Advance after a controlled delay
     setTimeout(() => {
@@ -77,30 +83,51 @@ export const PrologueModal: React.FC<PrologueModalProps> = ({
         setDishclothSelected(false);
         isAdvancingRef.current = false;
       } else {
+        const isLegit = !hasSkippedAny && updatedPracticed.every(Boolean);
         setIsFinished(true);
         isAdvancingRef.current = false;
-        onPrologueCompleted();
-        soundManager.playVictory();
-        try {
-          confetti({
-            particleCount: 90,
-            spread: 80,
-            origin: { y: 0.6 },
-          });
-        } catch {
-          // ignore
+        
+        if (isLegit) {
+          onPrologueCompleted();
+          soundManager.playVictory();
+          try {
+            confetti({
+              particleCount: 90,
+              spread: 80,
+              origin: { y: 0.6 },
+            });
+          } catch {
+            // ignore
+          }
         }
       }
     }, 600);
+  };
+
+  // Skip step manually (marked as skipped, so no cumulative count increment)
+  const handleSkipCurrentStep = () => {
+    if (isAdvancingRef.current) return;
+    setHasSkippedAny(true);
+
+    if (currentStepIndex < PROLOGUE_STEPS.length - 1) {
+      setCurrentStepIndex(prev => prev + 1);
+      setDishclothSelected(false);
+    } else {
+      setIsFinished(true);
+    }
   };
 
   const handleRestartPrologue = () => {
     isAdvancingRef.current = false;
     setCurrentStepIndex(0);
     setStepCompleted(new Array(6).fill(false));
+    setPracticedSteps(new Array(6).fill(false));
+    setHasSkippedAny(false);
     setIsFinished(false);
     setDishclothSelected(false);
   };
+
+  const isLegitimateClear = !hasSkippedAny && practicedSteps.every(Boolean);
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
@@ -169,13 +196,16 @@ export const PrologueModal: React.FC<PrologueModalProps> = ({
                       key={idx}
                       onClick={() => {
                         if (isAdvancingRef.current) return;
+                        if (idx > currentStepIndex && !practicedSteps[currentStepIndex]) {
+                          setHasSkippedAny(true);
+                        }
                         setCurrentStepIndex(idx);
                         setDishclothSelected(false);
                       }}
                       className={`h-2.5 rounded-full transition-all ${
                         idx === currentStepIndex
                           ? 'bg-amber-400 w-7'
-                          : stepCompleted[idx]
+                          : practicedSteps[idx]
                           ? 'bg-emerald-400 w-2.5'
                           : 'bg-slate-700 w-2.5 hover:bg-slate-600'
                       }`}
@@ -240,7 +270,7 @@ export const PrologueModal: React.FC<PrologueModalProps> = ({
             <div className="w-full h-[360px] sm:h-[420px] relative rounded-2xl overflow-hidden border-2 border-slate-700 shadow-inner bg-slate-950">
               <KitchenScene
                 activeHazards={[]}
-                onInteract={handleStepInteract}
+                onInteract={handleSceneInteract}
                 isPrologue={true}
                 highlightedHazard={currentStep.hazardType}
                 cleaningDishclothSelected={dishclothSelected}
@@ -265,38 +295,52 @@ export const PrologueModal: React.FC<PrologueModalProps> = ({
               </button>
 
               <div className="text-xs text-slate-300 font-medium text-center hidden sm:block">
-                화면 속 안내에 따라 주방 요소를 조작하거나 [실행 완료 & 다음] 버튼을 누르세요.
+                화면 속 안내에 따라 주방 요소를 직접 조작하여 실습을 완수하세요.
               </div>
 
-              <button
-                id="btn-prologue-next"
-                disabled={isAdvancingRef.current}
-                onClick={() => handleStepInteract(currentStep.hazardType)}
-                className="px-5 py-2.5 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-400 hover:to-orange-400 disabled:opacity-50 text-white rounded-xl text-xs sm:text-sm font-black flex items-center gap-1.5 shadow-lg transition"
-              >
-                실행 완료 & 다음 단계 <ChevronRight className="w-4 h-4" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  id="btn-prologue-skip"
+                  disabled={isAdvancingRef.current}
+                  onClick={handleSkipCurrentStep}
+                  className="px-4 py-2.5 bg-slate-700/80 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-slate-600 shadow"
+                  title="이 단계를 건너뛰면 이번 회차는 누적 클리어 횟수에 카운트되지 않습니다."
+                >
+                  단계 건너뛰기 <ChevronRight className="w-3.5 h-3.5 opacity-60" />
+                </button>
+              </div>
             </div>
 
           </div>
         ) : (
           /* Finished Screen: Complete Review & Game Mode Choice */
           <div className="flex-1 overflow-y-auto p-6 md:p-10 flex flex-col items-center justify-center text-center space-y-6">
-            <div className="w-20 h-20 bg-emerald-500/20 border-4 border-emerald-400 rounded-full flex items-center justify-center text-emerald-400 shadow-xl animate-bounce">
+            <div className={`w-20 h-20 border-4 rounded-full flex items-center justify-center shadow-xl ${
+              isLegitimateClear 
+                ? 'bg-emerald-500/20 border-emerald-400 text-emerald-400 animate-bounce' 
+                : 'bg-amber-500/20 border-amber-400 text-amber-400'
+            }`}>
               <CheckCircle className="w-12 h-12" />
             </div>
 
             <div className="space-y-2 max-w-xl">
               <h3 className="text-2xl md:text-3xl font-black font-game text-white">
-                가스안전 프롤로그 수료 완료! 🎉
+                가스안전 프롤로그 {isLegitimateClear ? '수료 완료! 🎉' : '학습 완료!'}
               </h3>
               <p className="text-sm md:text-base text-slate-300">
                 가스 밸브 90도 잠그기, 창문 2회 환기, 가연물 4가지 치우기, 기름때 청소, 노후 부품 신고, 호스 관리까지
                 6대 핵심 안전 수칙을 완벽하게 학습하셨습니다!
               </p>
-              <div className="inline-block bg-amber-500/20 border border-amber-500/40 text-amber-300 px-4 py-1.5 rounded-full text-xs font-bold">
-                🏆 프롤로그 클리어 횟수: {prologueClearCount + 1}회 (15회 완료 시 도전과제 달성!)
-              </div>
+              {isLegitimateClear ? (
+                <div className="inline-block bg-amber-500/20 border border-amber-500/40 text-amber-300 px-4 py-1.5 rounded-full text-xs font-bold">
+                  🏆 프롤로그 클리어 횟수: {prologueClearCount + 1}회 (15회 완료 시 도전과제 달성!)
+                </div>
+              ) : (
+                <div className="inline-flex items-center gap-2 bg-slate-800/90 border border-amber-500/50 text-amber-300 px-4 py-2 rounded-xl text-xs font-bold max-w-lg text-left shadow-lg">
+                  <span className="text-base">⚠️</span>
+                  <span>단계를 건너뛰어 누적 횟수에 포함되지 않았습니다. (1~6단계를 모두 직접 조작해야 누적 인정)</span>
+                </div>
+              )}
             </div>
 
             {/* Mode Selection Options */}
