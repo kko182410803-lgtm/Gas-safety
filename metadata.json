@@ -1,0 +1,6 @@
+{
+  "name": "가스안전 챌린지",
+  "description": "체험교실 및 터치스크린/PC 환경에 최적화된 가스 안전 교육 인터랙티브 시뮬레이션 게임",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

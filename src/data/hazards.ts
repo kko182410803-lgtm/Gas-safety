@@ -1,0 +1,103 @@
+import { HazardConfig, HazardType } from '../types';
+
+export const HAZARDS_DATA: Record<HazardType, HazardConfig> = {
+  valve: {
+    type: 'valve',
+    title: '가스 밸브 열림 감지!',
+    actionInstruction: '가스 밸브를 터치하여 꼭 잠가주세요',
+    reason: '가스가 새면 폭발 및 질식 위험이 있기 때문',
+    locationDescription: '벽면 가스 배관에 위치한 퓨즈콕 밸브',
+    educationalTip: '가스 사용 직후 및 외출 전에는 반드시 중간밸브(퓨즈콕)를 직각(90도)으로 돌려 잠가야 안전합니다.',
+    iconName: 'Flame',
+    color: 'from-amber-500 to-red-600',
+  },
+  window: {
+    type: 'window',
+    title: '환기 필요! 창문 닫힘',
+    actionInstruction: '싱크대 위 창문을 터치하여 활짝 열어주세요',
+    reason: '가스 누출 시 신속히 환기시켜 농도를 낮추기 때문',
+    locationDescription: '싱크대 상단 환기용 창문',
+    educationalTip: '가스 냄새가 나면 전기 스위치나 환풍기를 켜지 말고(스파크 위험!), 창문을 열어 자연 환기시켜야 합니다.',
+    iconName: 'Wind',
+    color: 'from-sky-500 to-blue-600',
+  },
+  flammables: {
+    type: 'flammables',
+    title: '가스레인지 주변 가연물 발견!',
+    actionInstruction: '불 근처의 박스/티슈/스프레이를 터치해 치워주세요',
+    reason: '가연성 물품을 불 근처에 두면 화재 위험이 크기 때문',
+    locationDescription: '가스레인지 조리대 주변',
+    educationalTip: '키친타월, 식용유, 부탄가스 캔, 에어로졸 스프레이는 조리기구 주변 1m 이상 안전거리를 유지해야 합니다.',
+    iconName: 'Trash2',
+    color: 'from-orange-500 to-amber-600',
+  },
+  cleaning: {
+    type: 'cleaning',
+    title: '가스레인지 기름때 방치!',
+    actionInstruction: '싱크대 행주를 집은 후 더러운 버너 주변을 닦아주세요',
+    reason: '주변이 더러우면 조리열에 의해 불이 붙을 수 있기 때문',
+    locationDescription: '가스레인지 상판 및 싱크대 행주',
+    educationalTip: '가스레인지 삼발이와 버너 구멍, 주변 기름때는 주기적으로 청소해야 불완전 연소와 화재를 예방합니다.',
+    iconName: 'Sparkles',
+    color: 'from-emerald-500 to-teal-600',
+  },
+  old_valve_call: {
+    type: 'old_valve_call',
+    title: '노후 가스 부품 점검 경보!',
+    actionInstruction: '싱크대 위 스마트폰을 터치해 전문가(1544-4500)에게 점검을 요청하세요',
+    reason: '오래된 부품은 방심하면 큰 불이나 가스 누출로 이어지기 때문',
+    locationDescription: '싱크대 선반 위 스마트폰',
+    educationalTip: '노후된 밸브나 호스는 임의로 교체하지 말고, 공인 가스공급자나 한국가스안전공사 전문가에게 정기점검을 받아야 합니다.',
+    iconName: 'PhoneCall',
+    color: 'from-purple-500 to-indigo-600',
+  },
+  hose_kink: {
+    type: 'hose_kink',
+    title: '가스 호스 눌림/꺾임 위험!',
+    actionInstruction: '눌린 가스 호스 부위를 터치해 반듯하게 펴주세요',
+    reason: '호스가 눌리거나 꺾이면 균열이 생겨 가스가 샐 수 있기 때문',
+    locationDescription: '가스레인지 하단 연결 호스',
+    educationalTip: '가스 호스는 꺾이거나 무거운 물건에 눌리지 않아야 하며, 비눗물 거품 점검으로 미세 누출을 정기 점검해야 합니다.',
+    iconName: 'Zap',
+    color: 'from-yellow-500 to-orange-600',
+  },
+};
+
+export const PROLOGUE_STEPS = [
+  {
+    hazardType: 'valve' as HazardType,
+    title: '1단계: 가스 밸브 잠그기',
+    characterDialogue: '"가스를 사용하지 않을 땐 중간밸브를 꼭 잠가야 해! 가스가 새면 큰 폭발이나 화재가 일어날 수 있거든."',
+    guideText: '화면의 붉게 깜빡이는 [가스 밸브]를 터치하여 잠가보세요!',
+  },
+  {
+    hazardType: 'window' as HazardType,
+    title: '2단계: 창문 열고 환기하기',
+    characterDialogue: '"혹시라도 가스 냄새가 나면 전등 스위치를 건드리지 말고 창문을 활짝 열어야 해! 공기를 순환시켜 가스를 밖으로 내보내야 안전하단다."',
+    guideText: '싱크대 위 [창문]을 터치하여 신선한 바람이 들어오게 열어보세요!',
+  },
+  {
+    hazardType: 'flammables' as HazardType,
+    title: '3단계: 가스레인지 주변 가연물 치우기',
+    characterDialogue: '"가스레인지 근처에 휴지, 스프레이, 종이박스를 두면 불꽃이 튀어 순식간에 불이 붙어! 안전한 곳으로 치워주자."',
+    guideText: '가스레인지 옆 [가연성 물건들]을 터치하여 안전하게 치워보세요!',
+  },
+  {
+    hazardType: 'cleaning' as HazardType,
+    title: '4단계: 가스레인지 기름때 청소하기',
+    characterDialogue: '"기름때나 음식물 찌꺼기가 눌어붙어 있으면 조리 중에 불이 붙을 수 있어! 깨끗한 행주로 쓱싹쓱싹 닦아주자."',
+    guideText: '싱크대의 [행주]를 터치한 뒤 [가스레인지 주변]을 터치해 깨끗하게 닦아보세요!',
+  },
+  {
+    hazardType: 'old_valve_call' as HazardType,
+    title: '5단계: 노후 밸브 전문가에게 전화하기',
+    characterDialogue: '"오래된 가스 부품은 눈에 보이지 않게 미세하게 가스가 샐 수 있어! 절대 혼자 고치지 말고 가스 전문가에게 전화해야 해."',
+    guideText: '싱크대 위 [스마트폰]을 터치하여 가스안전 전문기관에 점검을 요청해보세요!',
+  },
+  {
+    hazardType: 'hose_kink' as HazardType,
+    title: '6단계: 눌린 가스 호스 펴주기',
+    characterDialogue: '"가스 호스가 꺾이거나 무거운 냄비에 눌리면 호스에 금이 가서 위험해! 항상 곧고 바르게 유지해줘야 한단다."',
+    guideText: '하단에 눌려있는 [가스 호스]를 터치하여 반듯하게 펴보세요!',
+  },
+];
