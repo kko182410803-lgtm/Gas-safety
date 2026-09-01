@@ -16,7 +16,9 @@ export interface ActiveHazard {
   timeLeft: number;      // remaining time in seconds
   totalTime: number;     // initial time limit (10s normal / 5s hard)
   spawnedAt: number;     // timestamp
-  flammablesCount?: number; // for flammables: 2 items to clear
+  flammablesCount?: number; // for flammables: 4 items to clear
+  windowClickCount?: number; // for window: 2 clicks to fully open
+  phoneCallPending?: boolean; // phone call in progress
   cleaningToolSelected?: boolean; // for cleaning: dishcloth selected
 }
 

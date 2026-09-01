@@ -113,7 +113,7 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
               onClick={onGoToMenu}
               className="p-3.5 bg-slate-800 hover:bg-slate-700 border-2 border-slate-600 text-slate-200 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition"
             >
-              <Flame className="w-5 h-5 text-amber-400" /> 모드 선택
+              <RotateCcw className="w-5 h-5 text-amber-400" /> 돌아가기
             </button>
 
             <button

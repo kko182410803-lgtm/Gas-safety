@@ -118,7 +118,8 @@ export default function App() {
       timeLeft: timeLimit,
       totalTime: timeLimit,
       spawnedAt: Date.now(),
-      flammablesCount: randomType === 'flammables' ? 2 : undefined,
+      flammablesCount: randomType === 'flammables' ? 4 : undefined,
+      windowClickCount: randomType === 'window' ? 2 : undefined,
     };
 
     return [...currentList, newHazard];
@@ -136,8 +137,12 @@ export default function App() {
     setDishclothSelected(false);
     respawnCooldownTimer.current = 0;
 
-    // Spawn 1 initial hazard immediately
-    const initialList = spawnHazard([], chosenMode);
+    // Spawn 2 initial hazards immediately (up to 3 max)
+    let initialList = spawnHazard([], chosenMode);
+    initialList = spawnHazard(initialList, chosenMode);
+    if (chosenMode === 'hard') {
+      initialList = spawnHazard(initialList, chosenMode);
+    }
     setActiveHazards(initialList);
   }, [spawnHazard]);
 
@@ -230,8 +235,8 @@ export default function App() {
           setCombo(0);
         }
 
-        // 3. Hazard Spawner logic
-        const respawnInterval = mode === 'hard' ? 3.0 : 5.0;
+        // 3. Hazard Spawner logic (faster respawn, max 3)
+        const respawnInterval = mode === 'hard' ? 0.6 : 1.5;
         respawnCooldownTimer.current += 0.1;
 
         if (updatedList.length < 3 && respawnCooldownTimer.current >= respawnInterval) {
@@ -253,17 +258,6 @@ export default function App() {
     const targetHazard = activeHazards.find(h => h.type === hazardType);
     if (!targetHazard) return;
 
-    // Special case for flammables (requires 2 items)
-    if (hazardType === 'flammables' && targetHazard.flammablesCount && targetHazard.flammablesCount > 1) {
-      soundManager.playSuccess(1);
-      setActiveHazards(prev => prev.map(h => 
-        h.id === targetHazard.id 
-          ? { ...h, flammablesCount: (h.flammablesCount || 2) - 1 }
-          : h
-      ));
-      return;
-    }
-
     // Special sound cues by type
     if (hazardType === 'valve') soundManager.playValveTurn();
     else if (hazardType === 'window') soundManager.playWindowWhoosh();
@@ -279,8 +273,22 @@ export default function App() {
     setHazardsClearedCount(h => h + 1);
     setDishclothSelected(false);
 
-    // Remove cleared hazard
-    setActiveHazards(prev => prev.filter(h => h.id !== targetHazard.id));
+    // Remove cleared hazard and immediately trigger fast replenishment
+    setActiveHazards(prev => {
+      const remaining = prev.filter(h => h.id !== targetHazard.id);
+      return remaining;
+    });
+
+    // Immediate fast replenishment when one is cleared (even faster on hard mode)
+    const instantRespawnDelay = mode === 'hard' ? 150 : 400;
+    setTimeout(() => {
+      setActiveHazards(currentList => {
+        if (currentList.length < 3) {
+          return spawnHazard(currentList, mode);
+        }
+        return currentList;
+      });
+    }, instantRespawnDelay);
 
     // Reset respawn timer
     respawnCooldownTimer.current = 0;

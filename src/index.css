@@ -29,6 +29,12 @@
   100% { transform: rotate(0deg); }
 }
 
+@keyframes pendulumSwing {
+  0% { transform: rotate(-12deg); }
+  50% { transform: rotate(12deg); }
+  100% { transform: rotate(-12deg); }
+}
+
 .animate-smoke {
   animation: floatSmoke 2s infinite ease-out;
 }
@@ -39,4 +45,9 @@
 
 .animate-breeze {
   animation: gentleBreeze 3s infinite ease-in-out;
+}
+
+.animate-pendulum {
+  animation: pendulumSwing 2s infinite ease-in-out;
+  transform-origin: top center;
 }

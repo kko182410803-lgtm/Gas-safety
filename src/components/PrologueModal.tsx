@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { HazardType } from '../types';
 import { PROLOGUE_STEPS, HAZARDS_DATA } from '../data/hazards';
 import { KitchenScene } from './KitchenScene';
@@ -42,6 +42,7 @@ export const PrologueModal: React.FC<PrologueModalProps> = ({
   const [stepCompleted, setStepCompleted] = useState<boolean[]>(new Array(6).fill(false));
   const [isFinished, setIsFinished] = useState(false);
   const [dishclothSelected, setDishclothSelected] = useState(false);
+  const isAdvancingRef = useRef(false);
 
   const currentStep = PROLOGUE_STEPS[currentStepIndex];
   const currentHazardData = HAZARDS_DATA[currentStep?.hazardType || 'valve'];
@@ -58,36 +59,43 @@ export const PrologueModal: React.FC<PrologueModalProps> = ({
   if (!isOpen) return null;
 
   const handleStepInteract = (hazardType: HazardType) => {
-    if (hazardType === currentStep.hazardType) {
-      soundManager.playSuccess(1);
-      const updated = [...stepCompleted];
-      updated[currentStepIndex] = true;
-      setStepCompleted(updated);
+    // Prevent spam clicking from skipping multiple steps
+    if (isAdvancingRef.current) return;
+    if (hazardType !== currentStep.hazardType) return;
 
-      // Advance after a brief delay or complete
-      setTimeout(() => {
-        if (currentStepIndex < PROLOGUE_STEPS.length - 1) {
-          setCurrentStepIndex(prev => prev + 1);
-          setDishclothSelected(false);
-        } else {
-          setIsFinished(true);
-          onPrologueCompleted();
-          soundManager.playVictory();
-          try {
-            confetti({
-              particleCount: 90,
-              spread: 80,
-              origin: { y: 0.6 },
-            });
-          } catch {
-            // ignore
-          }
+    isAdvancingRef.current = true;
+    soundManager.playSuccess(1);
+
+    const updated = [...stepCompleted];
+    updated[currentStepIndex] = true;
+    setStepCompleted(updated);
+
+    // Advance after a controlled delay
+    setTimeout(() => {
+      if (currentStepIndex < PROLOGUE_STEPS.length - 1) {
+        setCurrentStepIndex(prev => prev + 1);
+        setDishclothSelected(false);
+        isAdvancingRef.current = false;
+      } else {
+        setIsFinished(true);
+        isAdvancingRef.current = false;
+        onPrologueCompleted();
+        soundManager.playVictory();
+        try {
+          confetti({
+            particleCount: 90,
+            spread: 80,
+            origin: { y: 0.6 },
+          });
+        } catch {
+          // ignore
         }
-      }, 700);
-    }
+      }
+    }, 600);
   };
 
   const handleRestartPrologue = () => {
+    isAdvancingRef.current = false;
     setCurrentStepIndex(0);
     setStepCompleted(new Array(6).fill(false));
     setIsFinished(false);
@@ -160,6 +168,7 @@ export const PrologueModal: React.FC<PrologueModalProps> = ({
                     <button
                       key={idx}
                       onClick={() => {
+                        if (isAdvancingRef.current) return;
                         setCurrentStepIndex(idx);
                         setDishclothSelected(false);
                       }}
@@ -187,7 +196,7 @@ export const PrologueModal: React.FC<PrologueModalProps> = ({
                       <span>가스안전 도우미 가스봇:</span>
                     </div>
                     <p className="text-xs sm:text-sm text-slate-100 leading-relaxed font-medium">
-                      "{currentStep.characterDialogue}"
+                      {currentStep.characterDialogue}
                     </p>
                   </div>
                 </div>
@@ -210,12 +219,10 @@ export const PrologueModal: React.FC<PrologueModalProps> = ({
                   <div>
                     <div className="text-xs font-black text-emerald-400 flex items-center gap-1.5 mb-1.5">
                       <MousePointerClick className="w-4 h-4 text-emerald-400 shrink-0" />
-                      <span>아래 주방에서 직접 체험하기</span>
+                      <span>직접 체험 가이드</span>
                     </div>
                     <p className="text-xs sm:text-sm text-emerald-100 font-bold leading-relaxed">
-                      {currentStep.hazardType === 'cleaning'
-                        ? '1. 싱크대의 항균 행주를 터치하여 들기 ➔ 2. 가스레인지 버너 기름때 터치!'
-                        : currentStep.guideText}
+                      {currentStep.guideText}
                     </p>
                   </div>
                   {currentStep.hazardType === 'cleaning' && (
@@ -245,9 +252,9 @@ export const PrologueModal: React.FC<PrologueModalProps> = ({
             <div className="bg-slate-800/90 border border-slate-700 rounded-2xl p-3.5 flex items-center justify-between gap-3">
               <button
                 id="btn-prologue-prev"
-                disabled={currentStepIndex === 0}
+                disabled={currentStepIndex === 0 || isAdvancingRef.current}
                 onClick={() => {
-                  if (currentStepIndex > 0) {
+                  if (currentStepIndex > 0 && !isAdvancingRef.current) {
                     setCurrentStepIndex(prev => prev - 1);
                     setDishclothSelected(false);
                   }
@@ -258,13 +265,14 @@ export const PrologueModal: React.FC<PrologueModalProps> = ({
               </button>
 
               <div className="text-xs text-slate-300 font-medium text-center hidden sm:block">
-                화면 속 반짝이는 주방 요소를 터치하거나 [실행 완료 & 다음] 버튼을 누르세요.
+                화면 속 안내에 따라 주방 요소를 조작하거나 [실행 완료 & 다음] 버튼을 누르세요.
               </div>
 
               <button
                 id="btn-prologue-next"
+                disabled={isAdvancingRef.current}
                 onClick={() => handleStepInteract(currentStep.hazardType)}
-                className="px-5 py-2.5 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-400 hover:to-orange-400 text-white rounded-xl text-xs sm:text-sm font-black flex items-center gap-1.5 shadow-lg transition"
+                className="px-5 py-2.5 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-400 hover:to-orange-400 disabled:opacity-50 text-white rounded-xl text-xs sm:text-sm font-black flex items-center gap-1.5 shadow-lg transition"
               >
                 실행 완료 & 다음 단계 <ChevronRight className="w-4 h-4" />
               </button>
@@ -283,7 +291,7 @@ export const PrologueModal: React.FC<PrologueModalProps> = ({
                 가스안전 프롤로그 수료 완료! 🎉
               </h3>
               <p className="text-sm md:text-base text-slate-300">
-                가스 밸브 잠그기, 창문 환기, 가연물 치우기, 기름때 청소, 노후 부품 신고, 호스 관리까지
+                가스 밸브 90도 잠그기, 창문 2회 환기, 가연물 4가지 치우기, 기름때 청소, 노후 부품 신고, 호스 관리까지
                 6대 핵심 안전 수칙을 완벽하게 학습하셨습니다!
               </p>
               <div className="inline-block bg-amber-500/20 border border-amber-500/40 text-amber-300 px-4 py-1.5 rounded-full text-xs font-bold">
