@@ -108,7 +108,7 @@ export default function App() {
     if (availableTypes.length === 0) return currentList;
 
     const randomType = availableTypes[Math.floor(Math.random() * availableTypes.length)];
-    const timeLimit = selectedMode === 'hard' ? 5.0 : 10.0;
+    const timeLimit = selectedMode === 'hard' ? 5.5 : 9.0;
 
     soundManager.playHazardWarning();
 
@@ -137,10 +137,10 @@ export default function App() {
     setDishclothSelected(false);
     respawnCooldownTimer.current = 0;
 
-    // Spawn 2 initial hazards immediately (up to 3 max)
+    // Spawn initial hazards
     let initialList = spawnHazard([], chosenMode);
-    initialList = spawnHazard(initialList, chosenMode);
     if (chosenMode === 'hard') {
+      initialList = spawnHazard(initialList, chosenMode);
       initialList = spawnHazard(initialList, chosenMode);
     }
     setActiveHazards(initialList);
@@ -235,8 +235,8 @@ export default function App() {
           setCombo(0);
         }
 
-        // 3. Hazard Spawner logic (faster respawn, max 3)
-        const respawnInterval = mode === 'hard' ? 0.6 : 1.5;
+        // 3. Hazard Spawner logic (normal is relaxed, hard is fast)
+        const respawnInterval = mode === 'hard' ? 0.8 : 3.5;
         respawnCooldownTimer.current += 0.1;
 
         if (updatedList.length < 3 && respawnCooldownTimer.current >= respawnInterval) {
@@ -273,14 +273,14 @@ export default function App() {
     setHazardsClearedCount(h => h + 1);
     setDishclothSelected(false);
 
-    // Remove cleared hazard and immediately trigger fast replenishment
+    // Remove cleared hazard
     setActiveHazards(prev => {
       const remaining = prev.filter(h => h.id !== targetHazard.id);
       return remaining;
     });
 
-    // Immediate fast replenishment when one is cleared (even faster on hard mode)
-    const instantRespawnDelay = mode === 'hard' ? 150 : 400;
+    // Replenishment delay when one is cleared (relaxed on normal mode, fast on hard mode)
+    const instantRespawnDelay = mode === 'hard' ? 250 : 1500;
     setTimeout(() => {
       setActiveHazards(currentList => {
         if (currentList.length < 3) {

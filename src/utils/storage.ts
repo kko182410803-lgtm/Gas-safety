@@ -17,20 +17,20 @@ export const INITIAL_ACHIEVEMENTS: Achievement[] = [
   {
     id: 'expert_normal',
     title: '가스안전 전문가',
-    description: '일반 모드에서 10,000점(만점) 이상 고득점 달성하기',
+    description: '일반 모드에서 5,000점 이상 고득점 달성하기',
     icon: 'Award',
     unlocked: false,
     progress: 0,
-    maxProgress: 10000,
+    maxProgress: 5000,
   },
   {
     id: 'master_hard',
     title: '가스안전 마스터',
-    description: '하드 모드에서 20,000점(이만점) 이상 고득점 달성하기',
+    description: '하드 모드에서 16,000점 이상 고득점 달성하기',
     icon: 'Crown',
     unlocked: false,
     progress: 0,
-    maxProgress: 20000,
+    maxProgress: 16000,
   },
   {
     id: 'prologue_15',
@@ -229,22 +229,22 @@ export const storage = {
       newlyUnlocked.push(survivorAch);
     }
 
-    // 2. 가스안전 전문가 (일반 모드 만점(10,000점) 넘기기)
+    // 2. 가스안전 전문가 (일반 모드 5,000점 이상 달성)
     const expertAch = achievements.find(a => a.id === 'expert_normal');
     if (expertAch) {
       expertAch.progress = Math.max(expertAch.progress, stats.normalHighScore);
-      if (mode === 'normal' && score >= 10000 && !expertAch.unlocked) {
+      if (mode === 'normal' && score >= 5000 && !expertAch.unlocked) {
         expertAch.unlocked = true;
         expertAch.unlockedAt = new Date().toLocaleDateString('ko-KR');
         newlyUnlocked.push(expertAch);
       }
     }
 
-    // 3. 가스안전 마스터 (하드모드 이만점(20,000점) 넘기기)
+    // 3. 가스안전 마스터 (하드 모드 16,000점 이상 달성)
     const masterAch = achievements.find(a => a.id === 'master_hard');
     if (masterAch) {
       masterAch.progress = Math.max(masterAch.progress, stats.hardHighScore);
-      if (mode === 'hard' && score >= 20000 && !masterAch.unlocked) {
+      if (mode === 'hard' && score >= 16000 && !masterAch.unlocked) {
         masterAch.unlocked = true;
         masterAch.unlockedAt = new Date().toLocaleDateString('ko-KR');
         newlyUnlocked.push(masterAch);
